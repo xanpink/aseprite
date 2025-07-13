@@ -2,7 +2,7 @@ name: build
 on: [push, pull_request]
 jobs:
   build:
-    runs-on: ${<!-- -->{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -14,21 +14,21 @@ jobs:
             build_type: Release
             enable_ui: on
     steps:
-    - uses: actions/checkout&#64;v3
+    - uses: actions/checkout@v3
       with:
-        submodules: &#39;recursive&#39;
+        submodules: 'recursive'
     - name: ccache
-      uses: hendrikmuhs/ccache-action&#64;v1
-      if: runner.os &#61;&#61; &#39;Linux&#39;
+      uses: hendrikmuhs/ccache-action@v1
+      if: runner.os == 'Linux'
       with:
-        key: ${<!-- -->{ matrix.os }}-${<!-- -->{ matrix.enable_ui }}
-    - uses: seanmiddleditch/gha-setup-ninja&#64;master
-    - uses: ilammy/msvc-dev-cmd&#64;v1
-      if: runner.os &#61;&#61; &#39;Windows&#39;
+        key: ${{ matrix.os }}-${{ matrix.enable_ui }}
+    - uses: seanmiddleditch/gha-setup-ninja@master
+    - uses: ilammy/msvc-dev-cmd@v1
+      if: runner.os == 'Windows'
     - name: Install Dependencies
       shell: bash
       run: |
-        if [[ &#34;${<!-- -->{ runner.os }}&#34; &#61;&#61; &#34;Linux&#34; ]] ; then
+        if [[ "${{ runner.os }}" == "Linux" ]] ; then
           sudo apt-get update -qq
           sudo apt-get install -y \
             libx11-dev libxcursor-dev libxi-dev
@@ -36,26 +36,26 @@ jobs:
     - name: Generating Makefiles
       shell: bash
       run: |
-        if [[ &#34;${<!-- -->{ runner.os }}&#34; &#61;&#61; &#34;Windows&#34; ]] ; then
-          export enable_ccache&#61;off
+        if [[ "${{ runner.os }}" == "Windows" ]] ; then
+          export enable_ccache=off
         else
-          export enable_ccache&#61;on
+          export enable_ccache=on
         fi
         curl -L https://github.com/blueloveTH/aseprite/releases/download/v0.01/skia.zip --output skia.zip
         7z x skia.zip
         cmake -S . -B build -G Ninja \
-          -DCMAKE_BUILD_TYPE&#61;${<!-- -->{ matrix.build_type }} \
-          -DENABLE_UI&#61;${<!-- -->{ matrix.enable_ui }} \
-          -DENABLE_CCACHE&#61;$enable_ccache \
-          -DLAF_BACKEND&#61;skia \
-          -DSKIA_DIR&#61;./skia \
-          -DSKIA_LIBRARY_DIR&#61;./skia/out/Release-x64 \
-          -DSKIA_LIBRARY&#61;./skia/out/Release-x64/skia.lib
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DENABLE_UI=${{ matrix.enable_ui }} \
+          -DENABLE_CCACHE=$enable_ccache \
+          -DLAF_BACKEND=skia \
+          -DSKIA_DIR=./skia \
+          -DSKIA_LIBRARY_DIR=./skia/out/Release-x64 \
+          -DSKIA_LIBRARY=./skia/out/Release-x64/skia.lib
     - name: Compiling
       shell: bash
       run: |
-        cd build &amp;&amp; ninja
-    - uses: actions/upload-artifact&#64;v3
+        cd build && ninja
+    - uses: actions/upload-artifact@v3
       with:
         name: aseprite
         path: |
